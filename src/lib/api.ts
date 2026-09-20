@@ -22,21 +22,26 @@ export class UnauthorizedError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken()
-  const res = await fetch(path, {
-    ...init,
-    headers: {
-      ...init?.headers,
-      Authorization: `Bearer ${token}`,
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-    },
-  })
+  let res: Response
+  try {
+    res = await fetch(path, {
+      ...init,
+      headers: {
+        ...init?.headers,
+        Authorization: `Bearer ${token}`,
+        ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+      },
+    })
+  } catch (err) {
+    throw new Error(`Network error calling ${path}: ${err instanceof Error ? err.message : String(err)}`)
+  }
 
   if (res.status === 401) {
     clearToken()
     throw new UnauthorizedError()
   }
   if (!res.ok) {
-    throw new Error(await res.text())
+    throw new Error(`${res.status} ${res.statusText} from ${path}: ${await res.text()}`)
   }
   return res.json() as Promise<T>
 }

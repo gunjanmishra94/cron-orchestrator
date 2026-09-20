@@ -26,7 +26,7 @@ function App() {
       setError(null)
     } catch (err) {
       if (err instanceof UnauthorizedError) return handleUnauthorized()
-      setError('Failed to load jobs')
+      setError(err instanceof Error ? err.message : 'Failed to load jobs')
     }
   }, [handleUnauthorized])
 
@@ -54,7 +54,7 @@ function App() {
         <CardContent>
           {error && <p className="text-destructive mb-4 text-sm">{error}</p>}
           {jobs === null ? (
-            <p className="text-muted-foreground text-sm">Loading…</p>
+            error ? null : <p className="text-muted-foreground text-sm">Loading…</p>
           ) : jobs.length === 0 ? (
             <p className="text-muted-foreground text-sm">No jobs configured.</p>
           ) : (
