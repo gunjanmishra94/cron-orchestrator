@@ -5,12 +5,22 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { setToken } from '@/lib/api'
 
+// HTTP header values must be ISO-8859-1; a stray smart quote or invisible
+// Unicode character from a paste (clipboard managers, autocorrect) would
+// otherwise crash every fetch() call with an opaque "non ISO-8859-1 code
+// point" TypeError instead of just... not matching the real token.
+function sanitizeToken(raw: string): string {
+  // eslint-disable-next-line no-control-regex
+  return raw.trim().replace(/[^\x20-\x7E]/g, '')
+}
+
 export function TokenGate({ onSubmit }: { onSubmit: () => void }) {
   const [value, setValue] = useState('')
 
   function submit() {
-    if (!value.trim()) return
-    setToken(value.trim())
+    const token = sanitizeToken(value)
+    if (!token) return
+    setToken(token)
     onSubmit()
   }
 

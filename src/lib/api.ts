@@ -33,7 +33,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       },
     })
   } catch (err) {
-    throw new Error(`Network error calling ${path}: ${err instanceof Error ? err.message : String(err)}`)
+    const message = err instanceof Error ? err.message : String(err)
+    // A token saved before sanitizeToken() existed (TokenGate.tsx) can
+    // still be sitting in localStorage with an invalid header character in
+    // it — that's unusable the same way a wrong token is, so clear it and
+    // send the user back to re-enter it instead of failing forever.
+    if (message.includes('ISO-8859-1')) {
+      clearToken()
+      throw new UnauthorizedError()
+    }
+    throw new Error(`Network error calling ${path}: ${message}`)
   }
 
   if (res.status === 401) {
