@@ -10,6 +10,7 @@ export interface Job {
 }
 
 export const INTERVAL_PRESETS: { label: string; minutes: number }[] = [
+  { label: 'Every 1 min', minutes: 1 },
   { label: 'Every 5 min', minutes: 5 },
   { label: 'Every 10 min', minutes: 10 },
   { label: 'Every 15 min', minutes: 15 },

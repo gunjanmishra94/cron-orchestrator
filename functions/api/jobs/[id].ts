@@ -14,8 +14,8 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, env, params 
     job.enabled = patch.enabled
   }
   if (typeof patch.intervalMinutes === 'number') {
-    if (patch.intervalMinutes < 5 || patch.intervalMinutes % 5 !== 0) {
-      return new Response('intervalMinutes must be a multiple of 5', { status: 400 })
+    if (!Number.isInteger(patch.intervalMinutes) || patch.intervalMinutes < 1) {
+      return new Response('intervalMinutes must be a positive integer', { status: 400 })
     }
     job.intervalMinutes = patch.intervalMinutes
   }

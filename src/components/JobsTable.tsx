@@ -3,8 +3,8 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { runJobNow, updateJob, UnauthorizedError } from '@/lib/api'
 import { relativeTime } from '@/lib/relative-time'
 import { INTERVAL_PRESETS, type Job } from '@/lib/types'
@@ -61,65 +61,62 @@ export function JobsTable({ jobs, onChange, onUnauthorized }: {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Job</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Frequency</TableHead>
-          <TableHead>Last run</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {jobs.map((job) => {
-          const isPending = pending.has(job.id)
-          return (
-            <TableRow key={job.id}>
-              <TableCell>
-                <div className="font-medium">{job.name}</div>
-                <div className="text-muted-foreground text-sm">{job.description}</div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={job.enabled}
-                    disabled={isPending}
-                    onCheckedChange={(checked) => toggle(job, checked)}
-                  />
-                  <Badge variant={job.enabled ? 'default' : 'secondary'}>
-                    {job.enabled ? 'Active' : 'Paused'}
-                  </Badge>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Select
-                  value={String(job.intervalMinutes)}
+    <div className="flex flex-col gap-4">
+      {jobs.map((job, i) => {
+        const isPending = pending.has(job.id)
+        return (
+          <div key={job.id} className="flex flex-col gap-3">
+            {i > 0 && <Separator />}
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="font-medium break-words">{job.name}</div>
+                <div className="text-muted-foreground text-sm break-words">{job.description}</div>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <Switch
+                  checked={job.enabled}
                   disabled={isPending}
-                  onValueChange={(value) => changeInterval(job, Number(value))}
-                >
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INTERVAL_PRESETS.map((preset) => (
-                      <SelectItem key={preset.minutes} value={String(preset.minutes)}>
-                        {preset.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </TableCell>
-              <TableCell className="text-muted-foreground">{relativeTime(job.lastTriggeredAt)}</TableCell>
-              <TableCell className="text-right">
-                <Button size="sm" variant="outline" disabled={isPending} onClick={() => runNow(job)}>
-                  Run now
-                </Button>
-              </TableCell>
-            </TableRow>
-          )
-        })}
-      </TableBody>
-    </Table>
+                  onCheckedChange={(checked) => toggle(job, checked)}
+                />
+                <Badge variant={job.enabled ? 'default' : 'secondary'}>
+                  {job.enabled ? 'Active' : 'Paused'}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Select
+                value={String(job.intervalMinutes)}
+                disabled={isPending}
+                onValueChange={(value) => changeInterval(job, Number(value))}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {INTERVAL_PRESETS.map((preset) => (
+                    <SelectItem key={preset.minutes} value={String(preset.minutes)}>
+                      {preset.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <span className="text-muted-foreground text-sm">Last run: {relativeTime(job.lastTriggeredAt)}</span>
+
+              <Button
+                size="sm"
+                variant="outline"
+                className="ml-auto"
+                disabled={isPending}
+                onClick={() => runNow(job)}
+              >
+                Run now
+              </Button>
+            </div>
+          </div>
+        )
+      })}
+    </div>
   )
 }
