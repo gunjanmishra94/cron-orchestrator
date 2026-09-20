@@ -1,0 +1,18 @@
+# Cloudflare Pages config for cron-orchestrator's Functions API
+# (functions/api/*). The static site itself (dist/) is built by
+# `npm run build`; this file only wires up the backend's bindings.
+#
+# Shares the CRON_STATE KV namespace with transit-mesh's cron-trigger
+# Worker (../transit-mesh/cron-trigger/wrangler.toml) — this app reads and
+# writes job config, cron-trigger reads it every 5 minutes to decide what
+# to fire.
+#
+# Secrets (not set here): ADMIN_TOKEN, GITHUB_DISPATCH_TOKEN — set via
+# `wrangler pages secret put <NAME> --project-name cron-orchestrator`.
+name = "cron-orchestrator"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-09-20"
+
+[[kv_namespaces]]
+binding = "CRON_STATE"
+id = "d974b73097804ac081c70efa90b2979c"
